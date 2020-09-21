@@ -97,4 +97,4 @@ public class DeadLockThread {
 
 在`IDEA`控制台点击`Dump Threads`图标可以查看死锁日志：
 
-![image](https://github.com/tianyalu/MultiThread/raw/master/show/dead_lock_console.png)
+![image](https://github.com/tianyalu/MultiThread/raw/master/show/thread_deadlock_console.png)
