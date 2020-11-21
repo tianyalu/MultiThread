@@ -68,7 +68,7 @@ public class DeadLockThread {
         synchronized (a) {
             System.out.println(Thread.currentThread().getName() + "获取到A锁");
             try {
-                //等待500ms，再去获取B资源，让另一个线程有时间去独自b
+                //等待500ms，再去获取B资源，让另一个线程有时间去独占b
                 Thread.sleep(500);
                 getB();
                 System.out.println(Thread.currentThread().getName() + "获取到B锁");
@@ -83,7 +83,7 @@ public class DeadLockThread {
         synchronized (b) {
             System.out.println(Thread.currentThread().getName() + "获取到B锁");
             try {
-                //等待500ms，再去获取A资源，让另一个线程有时间去独自a
+                //等待500ms，再去获取A资源，让另一个线程有时间去独占a
                 Thread.sleep(500);
                 getA();
                 System.out.println(Thread.currentThread().getName() + "获取到A锁");
@@ -98,3 +98,52 @@ public class DeadLockThread {
 在`IDEA`控制台点击`Dump Threads`图标可以查看死锁日志：
 
 ![image](https://github.com/tianyalu/MultiThread/raw/master/show/thread_deadlock_console.png)
+
+### 1.2 99个线程按顺序打印1-99
+
+注意`volatile`关键字的使用
+
+```java
+public class Print99InOrder {
+    private static Object lock = new Object();
+    private static volatile int currentNum = 0;
+
+    public static void main(String[] args) {
+        for (int i = 1; i < 100; i++) {
+            Thread thread = new MyThread(i);
+            thread.start();
+        }
+        synchronized (lock) {
+            currentNum++;
+            lock.notifyAll();
+        }
+    }
+
+    public static class MyThread extends Thread {
+        private int num;
+
+        public MyThread(int num) {
+            super("thread-" + num);
+            this.num = num;
+        }
+
+        @Override
+        public void run() {
+            super.run();
+            synchronized (lock) {
+                while (num != currentNum) {
+                    try {
+                        lock.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                System.out.println(Thread.currentThread().getName() + ": " + num);
+                currentNum++;
+                lock.notifyAll();
+            }
+        }
+    }
+}
+```
+
